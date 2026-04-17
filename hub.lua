@@ -1,138 +1,77 @@
--- BƯỚC 1: TẠO MÀN HÌNH CHÍNH
-local player = game.Players.LocalPlayer
-local PlayerGui = player:WaitForChild("PlayerGui")
+-- Gọi hệ thống tạo hiệu ứng mượt (TweenService) của Roblox
+local TweenService = game:GetService("TweenService")
 
--- Nếu mở Hub nhiều lần, xóa Hub cũ đi để không bị chồng lên nhau
-if PlayerGui:FindFirstChild("PhatHubTest") then
-    PlayerGui.PhatHubTest:Destroy()
-end
+-- Giả sử bạn đã có biến Trang Farm (Pages.FarmPage) từ code bài trước
+-- Tạo một cái khung chứa công tắc và chữ
+local ToggleContainer = Instance.new("Frame", Pages.FarmPage)
+ToggleContainer.Size = UDim2.new(1, -20, 0, 40)
+ToggleContainer.Position = UDim2.new(0, 10, 0, 10)
+ToggleContainer.BackgroundTransparency = 1
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "PhatHubTest"
-ScreenGui.Parent = PlayerGui
-ScreenGui.ResetOnSpawn = false
+-- Tiêu đề của công tắc
+local ToggleLabel = Instance.new("TextLabel", ToggleContainer)
+ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)
+ToggleLabel.BackgroundTransparency = 1
+ToggleLabel.Text = "Bật/Tắt Auto Farm"
+ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleLabel.Font = Enum.Font.GothamSemibold
+ToggleLabel.TextSize = 15
+ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- BẢNG CHÍNH (LÀM TO HƠN)
-local MainFrame = Instance.new("Frame")
-MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 400, 0, 300) -- Kích thước mới: Rộng 400, Cao 300
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150) -- Căn giữa màn hình
-MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40) -- Đổi màu xám đen sang trọng hơn
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true -- Cho phép kéo thả
+-- 1. TẠO CÁI NỀN CỦA CÔNG TẮC (Track)
+local ToggleTrack = Instance.new("Frame", ToggleContainer)
+ToggleTrack.Size = UDim2.new(0, 50, 0, 24)
+ToggleTrack.Position = UDim2.new(1, -60, 0.5, -12)
+ToggleTrack.BackgroundColor3 = Color3.fromRGB(60, 60, 70) -- Màu xám khi tắt
+local TrackCorner = Instance.new("UICorner", ToggleTrack)
+TrackCorner.CornerRadius = UDim.new(1, 0) -- Bo tròn hoàn toàn thành hình viên thuốc
 
--- THÊM BO GÓC CHO BẢNG CHÍNH THÊM HIỆN ĐẠI
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 10) -- Bo tròn 10 pixel
-MainCorner.Parent = MainFrame
+-- 2. TẠO CỤC TRÒN DI CHUYỂN BÊN TRONG (Circle)
+local ToggleCircle = Instance.new("Frame", ToggleTrack)
+ToggleCircle.Size = UDim2.new(0, 20, 0, 20)
+ToggleCircle.Position = UDim2.new(0, 2, 0.5, -10) -- Mặc định nằm bên trái
+ToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+local CircleCorner = Instance.new("UICorner", ToggleCircle)
+CircleCorner.CornerRadius = UDim.new(1, 0)
 
--- TIÊU ĐỀ HUB
-local Title = Instance.new("TextLabel")
-Title.Parent = MainFrame
-Title.Size = UDim2.new(1, -40, 0, 40)
-Title.Position = UDim2.new(0, 15, 0, 0)
-Title.BackgroundTransparency = 1
-Title.Text = "🌟 PHAT HUB - TỐI ƯU HÓA 🌟"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
-Title.TextXAlignment = Enum.TextXAlignment.Left
+-- 3. NÚT BẤM VÔ HÌNH ĐÈ LÊN TRÊN ĐỂ BẮT SỰ KIỆN CLICK
+local ToggleButton = Instance.new("TextButton", ToggleTrack)
+ToggleButton.Size = UDim2.new(1, 0, 1, 0)
+ToggleButton.BackgroundTransparency = 1
+ToggleButton.Text = ""
 
--- NÚT TẮT (CLOSE) Ở GÓC PHẢI
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Parent = MainFrame
-CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-CloseBtn.Position = UDim2.new(1, -35, 0, 5)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Màu đỏ
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 16
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 5)
-CloseCorner.Parent = CloseBtn
+-- 4. LOGIC HOẠT ĐỘNG
+local isToggled = false -- Mặc định ban đầu là Tắt (false)
 
--- Gắn chức năng tắt Hub cho nút X
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
--- KHUNG CHỨA CÁC NÚT (Có thanh cuộn nếu nhiều nút)
-local ButtonContainer = Instance.new("ScrollingFrame")
-ButtonContainer.Parent = MainFrame
-ButtonContainer.Size = UDim2.new(1, -20, 1, -50)
-ButtonContainer.Position = UDim2.new(0, 10, 0, 40)
-ButtonContainer.BackgroundTransparency = 1
-ButtonContainer.ScrollBarThickness = 4
-ButtonContainer.BorderSizePixel = 0
-
--- Lệnh thần thánh giúp tự động xếp các nút thẳng hàng
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = ButtonContainer
-UIListLayout.Padding = UDim.new(0, 10) -- Khoảng cách giữa các nút là 10 pixel
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
--- BƯỚC 2: HÀM TẠO NÚT (Viết 1 lần để dùng cho nhiều nút, code đỡ dài)
-local function CreateButton(text, color)
-    local btn = Instance.new("TextButton")
-    btn.Parent = ButtonContainer
-    btn.Size = UDim2.new(1, -10, 0, 45) -- Nút cao 45 pixel
-    btn.BackgroundColor3 = color
-    btn.Text = text
-    btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btn.Font = Enum.Font.GothamSemibold
-    btn.TextSize = 15
+ToggleButton.MouseButton1Click:Connect(function()
+    isToggled = not isToggled -- Đảo ngược trạng thái (Đang tắt thành bật, bật thành tắt)
     
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = btn
+    -- Cài đặt thông số cho hiệu ứng trượt (Trượt trong 0.3 giây)
+    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
     
-    return btn
-end
-
--- BƯỚC 3: TẠO CÁC NÚT VÀ GẮN CHỨC NĂNG
-
--- CHỨC NĂNG 1: TĂNG FPS (Như cũ)
-local FpsBtn = CreateButton("🚀 Xóa Texture & Bóng râm (Tăng FPS)", Color3.fromRGB(0, 150, 100))
-FpsBtn.MouseButton1Click:Connect(function()
-    FpsBtn.Text = "Đang xử lý..."
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            obj.Material = Enum.Material.SmoothPlastic
-            obj.CastShadow = false
-        elseif obj:IsA("Decal") or obj:IsA("Texture") then
-            obj:Destroy()
-        end
+    if isToggled then
+        -- TRẠNG THÁI BẬT: 
+        -- 1. Cục tròn trượt sang phải
+        local moveCircle = TweenService:Create(ToggleCircle, tweenInfo, {Position = UDim2.new(1, -22, 0.5, -10)})
+        -- 2. Đổi màu nền sang xanh dương sáng
+        local changeColor = TweenService:Create(ToggleTrack, tweenInfo, {BackgroundColor3 = Color3.fromRGB(0, 170, 255)})
+        
+        moveCircle:Play()
+        changeColor:Play()
+        
+        -- (Chỗ này bạn sẽ bỏ code bắt đầu Auto Farm vào)
+        print("Đã BẬT Auto Farm!")
+    else
+        -- TRẠNG THÁI TẮT:
+        -- 1. Cục tròn trượt về lại bên trái
+        local moveCircle = TweenService:Create(ToggleCircle, tweenInfo, {Position = UDim2.new(0, 2, 0.5, -10)})
+        -- 2. Đổi màu nền về lại xám
+        local changeColor = TweenService:Create(ToggleTrack, tweenInfo, {BackgroundColor3 = Color3.fromRGB(60, 60, 70)})
+        
+        moveCircle:Play()
+        changeColor:Play()
+        
+        -- (Chỗ này bạn sẽ bỏ code dừng Auto Farm vào)
+        print("Đã TẮT Auto Farm!")
     end
-    wait(0.5)
-    FpsBtn.Text = "✅ Đã Xóa Texture!"
-end)
-
--- CHỨC NĂNG 2: XÓA HIỆU ỨNG (Giảm lag khi tung chiêu)
-local EffectBtn = CreateButton("💨 Xóa Hiệu ứng (Skill, Khói, Lửa)", Color3.fromRGB(200, 100, 0))
-EffectBtn.MouseButton1Click:Connect(function()
-    EffectBtn.Text = "Đang dọn dẹp hiệu ứng..."
-    for _, obj in pairs(workspace:GetDescendants()) do
-        -- Tắt các hiệu ứng hạt, đuôi sáng, khói, lửa
-        if obj:IsA("ParticleEmitter") or obj:IsA("Trail") or obj:IsA("Smoke") or obj:IsA("Fire") or obj:IsA("Sparkles") then
-            obj.Enabled = false
-        end
-    end
-    wait(0.5)
-    EffectBtn.Text = "✅ Đã Xóa Hiệu Ứng!"
-end)
-
--- CHỨC NĂNG 3: BẬT SÁNG TOÀN BẢN ĐỒ (Dễ nhìn đồ vật trong bóng tối)
-local LightBtn = CreateButton("☀️ Sáng Toàn Bản Đồ (Fullbright)", Color3.fromRGB(50, 100, 200))
-LightBtn.MouseButton1Click:Connect(function()
-    LightBtn.Text = "Đang thắp sáng..."
-    local lighting = game:GetService("Lighting")
-    lighting.Brightness = 2
-    lighting.ClockTime = 14 -- Chỉnh thời gian trong game luôn là 2h chiều
-    lighting.FogEnd = 100000 -- Đẩy sương mù ra tít xa
-    lighting.GlobalShadows = false
-    lighting.Ambient = Color3.fromRGB(255, 255, 255)
-    wait(0.5)
-    LightBtn.Text = "✅ Đã Bật Sáng!"
 end)
