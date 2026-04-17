@@ -1,6 +1,6 @@
 local TweenService = game:GetService("TweenService")
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
 
@@ -22,7 +22,7 @@ MainFrame.Active = true
 MainFrame.Draggable = true
 Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
 
--- Nút Tắt (X)
+-- Nút Tắt (X) ở góc trên cùng
 local CloseBtn = Instance.new("TextButton", MainFrame)
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Position = UDim2.new(1, -35, 0, 5)
@@ -89,7 +89,7 @@ local function CreateTab(tabName, targetPage)
     end)
 end
 
--- KHỞI TẠO CÁC TRANG
+-- KHỞI TẠO CÁC TRANG VÀ TAB
 Pages.Farm = CreatePage("☁️ FARM")
 Pages.Player = CreatePage("👤 PLAYER")
 Pages.Settings = CreatePage("⚙️ SETTINGS")
@@ -97,11 +97,13 @@ Pages.Settings = CreatePage("⚙️ SETTINGS")
 CreateTab("Farm", Pages.Farm)
 CreateTab("Player", Pages.Player)
 CreateTab("Settings", Pages.Settings)
-Pages.Farm.Visible = true -- Trang mặc định
-Sidebar:GetChildren()[2].BackgroundColor3 = Color3.fromRGB(0, 150, 255) -- Sáng nút Farm
+
+-- Mặc định mở trang Farm đầu tiên
+Pages.Farm.Visible = true
+Sidebar:GetChildren()[2].BackgroundColor3 = Color3.fromRGB(0, 150, 255)
 
 -- ==========================================
--- 🚀 TÍNH NĂNG 1: CÔNG TẮC BẬT/TẮT (Nằm ở trang Farm)
+-- 🚀 TRANG FARM: TÍNH NĂNG CÔNG TẮC BẬT/TẮT
 -- ==========================================
 local ToggleBg = Instance.new("Frame", Pages.Farm)
 ToggleBg.Size = UDim2.new(1, -20, 0, 45)
@@ -113,7 +115,7 @@ local ToggleLabel = Instance.new("TextLabel", ToggleBg)
 ToggleLabel.Size = UDim2.new(0.7, 0, 1, 0)
 ToggleLabel.Position = UDim2.new(0, 15, 0, 0)
 ToggleLabel.BackgroundTransparency = 1
-ToggleLabel.Text = "Auto Farm (Giao diện)"
+ToggleLabel.Text = "Auto Farm (Chức năng mẫu)"
 ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleLabel.Font = Enum.Font.GothamSemibold
 ToggleLabel.TextSize = 14
@@ -150,8 +152,9 @@ ToggleBtn.MouseButton1Click:Connect(function()
 end)
 
 -- ==========================================
--- 🚀 TÍNH NĂNG 2: THANH TRƯỢT HACK TỐC ĐỘ (Nằm ở trang Player)
+-- 🚀 TRANG PLAYER: HACK TỐC ĐỘ VÀ BẢNG MÁU
 -- ==========================================
+-- 1. Hack Tốc Độ
 local SliderBg = Instance.new("Frame", Pages.Player)
 SliderBg.Size = UDim2.new(1, -20, 0, 60)
 SliderBg.Position = UDim2.new(0, 10, 0, 40)
@@ -177,7 +180,6 @@ SpeedValue.TextColor3 = Color3.fromRGB(0, 200, 255)
 SpeedValue.Font = Enum.Font.GothamBold
 SpeedValue.TextSize = 14
 
--- Nút bấm nhanh để chỉnh tốc độ
 local SetSpeedBtn = Instance.new("TextButton", SliderBg)
 SetSpeedBtn.Size = UDim2.new(1, -30, 0, 20)
 SetSpeedBtn.Position = UDim2.new(0, 15, 0, 30)
@@ -191,12 +193,12 @@ SetSpeedBtn.MouseButton1Click:Connect(function()
     if player.Character and player.Character:FindFirstChild("Humanoid") then
         local humanoid = player.Character.Humanoid
         if humanoid.WalkSpeed == 16 then
-            humanoid.WalkSpeed = 100 -- Chạy siêu nhanh
+            humanoid.WalkSpeed = 100
             SetSpeedBtn.Text = "TẮT MAX TỐC ĐỘ"
             SetSpeedBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
             SpeedValue.Text = "100"
         else
-            humanoid.WalkSpeed = 16 -- Trở về bình thường
+            humanoid.WalkSpeed = 16
             SetSpeedBtn.Text = "BẬT MAX TỐC ĐỘ"
             SetSpeedBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
             SpeedValue.Text = "16"
@@ -204,9 +206,7 @@ SetSpeedBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- ==========================================
--- 🚀 TÍNH NĂNG 3: BẢNG THEO DÕI MÁU (Live Status)
--- ==========================================
+-- 2. Bảng Theo Dõi Máu (Live Status)
 local StatusBg = Instance.new("Frame", Pages.Player)
 StatusBg.Size = UDim2.new(1, -20, 0, 45)
 StatusBg.Position = UDim2.new(0, 10, 0, 110)
@@ -223,19 +223,51 @@ StatusLabel.Font = Enum.Font.GothamSemibold
 StatusLabel.TextSize = 14
 StatusLabel.TextXAlignment = Enum.TextXAlignment.Left
 
--- Vòng lặp cập nhật Máu liên tục
 task.spawn(function()
     while task.wait(0.5) do
         if player.Character and player.Character:FindFirstChild("Humanoid") then
             local health = math.floor(player.Character.Humanoid.Health)
             local maxHealth = math.floor(player.Character.Humanoid.MaxHealth)
             StatusLabel.Text = "Xin chào: " .. player.Name .. " | Máu: " .. health .. "/" .. maxHealth
-            
             if health < (maxHealth * 0.3) then
-                StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50) -- Đổi màu đỏ nếu yếu máu
+                StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
             else
-                StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100) -- Xanh lá nếu khỏe
+                StatusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
             end
         end
     end
+end)
+
+-- ==========================================
+-- 🚀 TRANG SETTINGS: REJOIN VÀ XÓA HUB
+-- ==========================================
+-- 1. Nút Rejoin Server
+local RejoinBtn = Instance.new("TextButton", Pages.Settings)
+RejoinBtn.Size = UDim2.new(1, -20, 0, 45)
+RejoinBtn.Position = UDim2.new(0, 10, 0, 40)
+RejoinBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+RejoinBtn.Text = "🔄 REJOIN SERVER (Vào lại phòng này)"
+RejoinBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+RejoinBtn.Font = Enum.Font.GothamBold
+RejoinBtn.TextSize = 14
+Instance.new("UICorner", RejoinBtn).CornerRadius = UDim.new(0, 6)
+
+RejoinBtn.MouseButton1Click:Connect(function()
+    RejoinBtn.Text = "Đang kết nối lại..."
+    TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+end)
+
+-- 2. Nút Panic (Xóa Hub)
+local DestroyBtn = Instance.new("TextButton", Pages.Settings)
+DestroyBtn.Size = UDim2.new(1, -20, 0, 45)
+DestroyBtn.Position = UDim2.new(0, 10, 0, 95)
+DestroyBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+DestroyBtn.Text = "🗑️ XÓA BỎ HUB KHỎI MÀN HÌNH"
+DestroyBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+DestroyBtn.Font = Enum.Font.GothamBold
+DestroyBtn.TextSize = 14
+Instance.new("UICorner", DestroyBtn).CornerRadius = UDim.new(0, 6)
+
+DestroyBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
 end)
